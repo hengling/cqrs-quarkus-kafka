@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: quarkus-cqrs-demo
+  labels:
+    name: quarkus-cqrs-demo
+    istio-injection: disabled
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka
+  labels:
+    name: kafka
+    istio-injection: disabled

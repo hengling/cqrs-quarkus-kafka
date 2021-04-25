@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: quarkus-cqrs-demo
+  labels:
+    app: postgresql
+data:
+  POSTGRES_DB: bankaccount
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: quarkus-cqrs-demo
+spec:
+  selector:
+    matchLabels:
+      app: postgresql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - image: postgres
+          name: bankaccount-postgres
+          envFrom:
+            - configMapRef:
+                name: postgresql-config
+          ports:
+            - containerPort: 5432
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: quarkus-cqrs-demo
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+  selector:
+    app: postgresql
+
+# kubectl delete service postgresql -n quarkus-cqrs-demo && kubectl delete deployment postgresql -n quarkus-cqrs-demo && kubectl delete configmap postgresql-config -n quarkus-cqrs-demo

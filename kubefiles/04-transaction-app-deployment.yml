@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-app
+  namespace: quarkus-cqrs-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction-app
+      namespace: quarkus-cqrs-demo
+  template:
+    metadata:
+      labels:
+        app: transaction-app
+        namespace: quarkus-cqrs-demo
+    spec:
+      containers:
+        - name: transaction-app
+          image: quarkus/transaction-service-jvm:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /transaction-service/health/live
+            initialDelaySeconds: 15
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /transaction-service/health/ready
+            initialDelaySeconds: 15
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-app
+  namespace: quarkus-cqrs-demo
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: transaction-app
+
+# kubectl delete service transaction-app -n quarkus-cqrs-demo && kubectl delete deployment transaction-app -n quarkus-cqrs-demo

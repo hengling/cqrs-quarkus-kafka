@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: balance-app
+  namespace: quarkus-cqrs-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: balance-app
+      namespace: quarkus-cqrs-demo
+  template:
+    metadata:
+      labels:
+        app: balance-app
+        namespace: quarkus-cqrs-demo
+    spec:
+      containers:
+        - name: balance-app
+          image: quarkus/balance-service-jvm:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /balance-service/health/live
+            initialDelaySeconds: 15
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /balance-service/health/ready
+            initialDelaySeconds: 15
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: balance-app
+  namespace: quarkus-cqrs-demo
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: balance-app
+
+# kubectl delete service balance-app -n quarkus-cqrs-demo && kubectl delete deployment balance-app -n quarkus-cqrs-demo

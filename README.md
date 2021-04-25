@@ -48,5 +48,72 @@ k6 run --vus 10 --duration 60s performance-tests/income.js
 k6 run --vus 10 --duration 60s performance-tests/expense.js
 ````
 
+## Deploying to Minikube - local kubernetes
+
+Run the following commands in order to deploy the app on *minikube*:
+
+### Running all dependencies
+
+1. Create minikube cluster: `minikube -p dev.to start --cpus 2 --memory=4096`
+2. Open minikube's dashboard: `minikube -p dev.to dashboard`
+3. Open another terminal, enter on folder *kubefiles* and run the following commands, one by one:
+```
+kubectl apply -f 01-namespace.yml
+kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n kafka 
+kubectl apply -f 02-postgres-deployment.yml
+kubectl apply -f 03-mongo-deployment.yml
+```
+
+### Running transaction-service and balance-service
+
+*transaction-service*
+
+Replace the content of the following properties on `application.properties`
+```
+%prod.quarkus.datasource.jdbc.url=jdbc:postgresql://POSTGRES_IP_ON_MINIKUBE:5432/bankaccount
+%prod.mp.messaging.outgoing.transactions.bootstrap.servers: KAFKA_IP_ON_MINIKUBE:9092
+%prod.kafka.bootstrap.servers: KAFKA_IP_ON_MINIKUBE:9092
+```
+
+*balance-service*
+
+Replace the content of the following properties on `application.properties`
+```
+%prod.quarkus.mongodb.connection-string = mongodb://MONGO_IP_ON_MINIKUBE:27017
+%prod.quarkus.kafka-streams.bootstrap-servers=KAFKA_IP_ON_MINIKUBE:9092
+%prod.quarkus.kafka-streams.application-server=KAFKA_IP_ON_MINIKUBE:8080
+```
+
+Build project and build docker images for both projects.
+
+Upload docker images to minikube cache, so it finds the image and do not need to download the image from docker registry:
+
+```
+minikube -p dev.to image load quarkus/balance-service-jvm:latest
+minikube -p dev.to image load quarkus/transaction-service-jvm:latest
+``` 
+
+List all images to make sure the images we built were successfully added to minikube cache:
+
+```
+minikube -p dev.to image list
+```
+
+Finally, apply the deployment file:
+```
+kubectl apply -f 04-transaction-app-deployment.yml
+kubectl apply -f 05-balance-app-deployment.yml
+```
+
+Use the following commands to find the url to the transaction-app and balance-app:
+
+```
+minikube -p dev.to service -n quarkus-cqrs-demo transaction-app --url
+minikube -p dev.to service -n quarkus-cqrs-demo balance-app --url
+```
+
+Test the endpoints using the examples `expense-transaction.json` and `income-transaction.json`
+
 ### Contributing
 I'd love to have a frontend for it! [Please reach me out if you got interested](MailTo:wesley.fuchter@gmail.com)
