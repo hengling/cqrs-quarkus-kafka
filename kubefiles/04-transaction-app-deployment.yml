@@ -37,7 +37,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: transaction-app
+  name: transaction-service
   namespace: quarkus-cqrs-demo
 spec:
   type: NodePort
@@ -48,4 +48,4 @@ spec:
   selector:
     app: transaction-app
 
-# kubectl delete service transaction-app -n quarkus-cqrs-demo && kubectl delete deployment transaction-app -n quarkus-cqrs-demo
+# kubectl delete service transaction-service -n quarkus-cqrs-demo && kubectl delete deployment transaction-app -n quarkus-cqrs-demo

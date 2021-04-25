@@ -54,7 +54,7 @@ Run the following commands in order to deploy the app on *minikube*:
 
 ### Running all dependencies
 
-1. Create minikube cluster: `minikube -p dev.to start --cpus 2 --memory=4096`
+1. Create minikube cluster and enable ingress: `minikube -p dev.to start --cpus 2 --memory=4096 && minikube -p dev.to addons enable ingress`
 2. Open minikube's dashboard: `minikube -p dev.to dashboard`
 3. Open another terminal, enter on folder *kubefiles* and run the following commands, one by one:
 ```
@@ -100,17 +100,13 @@ List all images to make sure the images we built were successfully added to mini
 minikube -p dev.to image list
 ```
 
+Use the command `minikube -p dev.to ip` to find out the minikube ip and map it as `dev.local` on `/ect/hosts`
+
 Finally, apply the deployment file:
 ```
 kubectl apply -f 04-transaction-app-deployment.yml
 kubectl apply -f 05-balance-app-deployment.yml
-```
-
-Use the following commands to find the url to the transaction-app and balance-app:
-
-```
-minikube -p dev.to service -n quarkus-cqrs-demo transaction-app --url
-minikube -p dev.to service -n quarkus-cqrs-demo balance-app --url
+kubectl apply -f 06-ingress.yml
 ```
 
 Test the endpoints using the examples `expense-transaction.json` and `income-transaction.json`

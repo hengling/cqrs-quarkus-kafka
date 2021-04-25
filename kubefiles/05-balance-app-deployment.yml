@@ -37,7 +37,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: balance-app
+  name: balance-service
   namespace: quarkus-cqrs-demo
 spec:
   type: NodePort
@@ -48,4 +48,4 @@ spec:
   selector:
     app: balance-app
 
-# kubectl delete service balance-app -n quarkus-cqrs-demo && kubectl delete deployment balance-app -n quarkus-cqrs-demo
+# kubectl delete service balance-service -n quarkus-cqrs-demo && kubectl delete deployment balance-app -n quarkus-cqrs-demo
